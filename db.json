@@ -1,0 +1,352 @@
+{
+  "packages": [
+    {
+      "id": "1",
+      "name": "Bronze",
+      "speed": "10 Mbps",
+      "price": 2500,
+      "description": "Perfect for small households with basic internet needs",
+      "features": [
+        "10 Mbps download speed",
+        "Unlimited data",
+        "Basic support",
+        "1 device recommended"
+      ],
+      "color": "#cd7f32"
+    },
+    {
+      "id": "2",
+      "name": "Silver",
+      "speed": "25 Mbps",
+      "price": 4500,
+      "description": "Ideal for medium-sized families with moderate usage",
+      "features": [
+        "25 Mbps download speed",
+        "Unlimited data",
+        "Priority support",
+        "Up to 5 devices"
+      ],
+      "color": "#c0c0c0"
+    },
+    {
+      "id": "3",
+      "name": "Gold",
+      "speed": "50 Mbps",
+      "price": 7500,
+      "description": "Great for large families and home offices",
+      "features": [
+        "50 Mbps download speed",
+        "Unlimited data",
+        "Premium support",
+        "Up to 10 devices",
+        "Free installation"
+      ],
+      "color": "#ffd700"
+    },
+    {
+      "id": "4",
+      "name": "Platinum",
+      "speed": "100 Mbps",
+      "price": 12000,
+      "description": "Ultimate package for power users and businesses",
+      "features": [
+        "100 Mbps download speed",
+        "Unlimited data",
+        "24/7 premium support",
+        "Unlimited devices",
+        "Free installation",
+        "Static IP option"
+      ],
+      "color": "#e5e4e2"
+    }
+  ],
+  "salesmen": [
+    {
+      "id": "1",
+      "dealerId": 1,
+      "name": "John Kamau",
+      "email": "john.kamau@example.com",
+      "phone": "+254712345678",
+      "agentId": "AG001",
+      "isActive": true,
+      "totalSales": 15,
+      "totalCommission": 45000,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "dealerId": 1,
+      "name": "Mary Wanjiku",
+      "email": "mary.wanjiku@example.com",
+      "phone": "+254723456789",
+      "agentId": "AG002",
+      "isActive": true,
+      "totalSales": 23,
+      "totalCommission": 69000,
+      "createdAt": "2024-01-20T10:00:00Z"
+    },
+    {
+      "id": "3",
+      "dealerId": 1,
+      "name": "Peter Ochieng",
+      "email": "peter.ochieng@example.com",
+      "phone": "+254734567890",
+      "agentId": "AG003",
+      "isActive": true,
+      "totalSales": 8,
+      "totalCommission": 24000,
+      "createdAt": "2024-02-01T10:00:00Z"
+    },
+    {
+      "id": "4",
+      "dealerId": 2,
+      "name": "Sarah Achieng",
+      "email": "sarah.achieng@example.com",
+      "phone": "+254745678901",
+      "agentId": "AG004",
+      "isActive": true,
+      "totalSales": 31,
+      "totalCommission": 93000,
+      "createdAt": "2024-01-10T10:00:00Z"
+    }
+  ],
+  "applications": [
+    {
+      "id": "1",
+      "applicationNumber": "APP-2024-001",
+      "dealerId": 1,
+      "agentId": 1,
+      "agentName": "John Kamau",
+      "customerName": "David Mwangi",
+      "customerEmail": "david.mwangi@example.com",
+      "customerPhone": "+254712345679",
+      "customerNationalId": "12345678",
+      "physicalAddress": {
+        "building": "Green Apartments",
+        "floor": "3rd Floor",
+        "unit": "A3",
+        "street": "Moi Avenue",
+        "area": "Westlands",
+        "city": "Nairobi",
+        "postalCode": "00100"
+      },
+      "packageId": 2,
+      "packageName": "Silver",
+      "status": "pending",
+      "submittedAt": "2024-03-15T10:30:00Z",
+      "dispatchedAt": null,
+      "installedAt": null,
+      "kycDocuments": {
+        "nationalId": "uploaded",
+        "proofOfAddress": "uploaded"
+      }
+    },
+    {
+      "id": "2",
+      "applicationNumber": "APP-2024-002",
+      "dealerId": 1,
+      "agentId": 2,
+      "agentName": "Mary Wanjiku",
+      "customerName": "Grace Njeri",
+      "customerEmail": "grace.njeri@example.com",
+      "customerPhone": "+254723456790",
+      "customerNationalId": "23456789",
+      "physicalAddress": {
+        "building": "Sunset Towers",
+        "floor": "Ground Floor",
+        "unit": "G12",
+        "street": "Kenyatta Avenue",
+        "area": "Kilimani",
+        "city": "Nairobi",
+        "postalCode": "00100"
+      },
+      "packageId": 3,
+      "packageName": "Gold",
+      "status": "dispatched",
+      "submittedAt": "2024-03-14T14:20:00Z",
+      "dispatchedAt": "2024-03-16T09:00:00Z",
+      "installedAt": null,
+      "kycDocuments": {
+        "nationalId": "uploaded",
+        "proofOfAddress": "uploaded"
+      }
+    },
+    {
+      "id": "3",
+      "applicationNumber": "APP-2024-003",
+      "dealerId": 1,
+      "agentId": 1,
+      "agentName": "John Kamau",
+      "customerName": "James Omondi",
+      "customerEmail": "james.omondi@example.com",
+      "customerPhone": "+254734567891",
+      "customerNationalId": "34567890",
+      "physicalAddress": {
+        "building": "Parkview Estate",
+        "floor": "2nd Floor",
+        "unit": "B5",
+        "street": "Ring Road",
+        "area": "Westlands",
+        "city": "Nairobi",
+        "postalCode": "00100"
+      },
+      "packageId": 1,
+      "packageName": "Bronze",
+      "status": "active",
+      "submittedAt": "2024-03-10T11:15:00Z",
+      "dispatchedAt": "2024-03-12T08:30:00Z",
+      "installedAt": "2024-03-13T15:45:00Z",
+      "kycDocuments": {
+        "nationalId": "uploaded",
+        "proofOfAddress": "uploaded"
+      }
+    },
+    {
+      "id": "4",
+      "applicationNumber": "APP-2024-004",
+      "dealerId": 1,
+      "agentId": 3,
+      "agentName": "Peter Ochieng",
+      "customerName": "Lucy Wanjala",
+      "customerEmail": "lucy.wanjala@example.com",
+      "customerPhone": "+254745678902",
+      "customerNationalId": "45678901",
+      "physicalAddress": {
+        "building": "Riverside Apartments",
+        "floor": "5th Floor",
+        "unit": "C8",
+        "street": "Ngong Road",
+        "area": "Kilimani",
+        "city": "Nairobi",
+        "postalCode": "00100"
+      },
+      "packageId": 4,
+      "packageName": "Platinum",
+      "status": "pending",
+      "submittedAt": "2024-03-17T16:20:00Z",
+      "dispatchedAt": null,
+      "installedAt": null,
+      "kycDocuments": {
+        "nationalId": "uploaded",
+        "proofOfAddress": "pending"
+      }
+    },
+    {
+      "id": "e47f",
+      "dealerId": 1,
+      "agentId": 1,
+      "customerName": "tyrese muigai",
+      "customerEmail": "tyresemuigai09@gmail.com",
+      "customerPhone": "0718004282",
+      "customerNationalId": "41630989",
+      "physicalAddress": {
+        "building": "wamu apartments",
+        "floor": "1st",
+        "unit": "9",
+        "street": "juja",
+        "area": "kalimoni",
+        "city": "juja",
+        "postalCode": "898-10400"
+      },
+      "packageId": "4",
+      "packageName": "Platinum",
+      "status": "pending",
+      "submittedAt": "2026-01-12T13:40:15.884Z",
+      "kycDocuments": {
+        "nationalId": "pending",
+        "proofOfAddress": "pending"
+      }
+    }
+  ],
+  "commissions": [
+    {
+      "id": "1",
+      "dealerId": 1,
+      "agentId": 1,
+      "agentName": "John Kamau",
+      "period": "2024-03",
+      "totalSales": 15,
+      "successfulActivations": 12,
+      "totalRevenue": 54000,
+      "commissionRate": 0.15,
+      "totalCommission": 8100,
+      "paid": false,
+      "paidAt": null
+    },
+    {
+      "id": "2",
+      "dealerId": 1,
+      "agentId": 2,
+      "agentName": "Mary Wanjiku",
+      "period": "2024-03",
+      "totalSales": 23,
+      "successfulActivations": 20,
+      "totalRevenue": 90000,
+      "commissionRate": 0.15,
+      "totalCommission": 13500,
+      "paid": false,
+      "paidAt": null
+    },
+    {
+      "id": "3",
+      "dealerId": 1,
+      "agentId": 3,
+      "agentName": "Peter Ochieng",
+      "period": "2024-03",
+      "totalSales": 8,
+      "successfulActivations": 6,
+      "totalRevenue": 27000,
+      "commissionRate": 0.15,
+      "totalCommission": 4050,
+      "paid": false,
+      "paidAt": null
+    }
+  ],
+  "installations": [
+    {
+      "id": "1",
+      "applicationId": 1,
+      "applicationNumber": "APP-2024-001",
+      "agentId": 1,
+      "agentName": "John Kamau",
+      "customerName": "David Mwangi",
+      "customerPhone": "+254712345679",
+      "address": "Green Apartments, 3rd Floor, A3, Moi Avenue, Westlands, Nairobi",
+      "packageName": "Silver",
+      "status": "scheduled",
+      "scheduledDate": "2024-03-20T10:00:00Z",
+      "technicianAssigned": null,
+      "completedAt": null
+    },
+    {
+      "id": "2",
+      "applicationId": 2,
+      "applicationNumber": "APP-2024-002",
+      "agentId": 2,
+      "agentName": "Mary Wanjiku",
+      "customerName": "Grace Njeri",
+      "customerPhone": "+254723456790",
+      "address": "Sunset Towers, Ground Floor, G12, Kenyatta Avenue, Kilimani, Nairobi",
+      "packageName": "Gold",
+      "status": "in-progress",
+      "scheduledDate": "2024-03-18T09:00:00Z",
+      "technicianAssigned": "Tech-001",
+      "completedAt": null
+    },
+    {
+      "id": "3",
+      "applicationId": 3,
+      "applicationNumber": "APP-2024-003",
+      "agentId": 1,
+      "agentName": "John Kamau",
+      "customerName": "James Omondi",
+      "customerPhone": "+254734567891",
+      "address": "Parkview Estate, 2nd Floor, B5, Ring Road, Westlands, Nairobi",
+      "packageName": "Bronze",
+      "status": "completed",
+      "scheduledDate": "2024-03-13T08:00:00Z",
+      "technicianAssigned": "Tech-002",
+      "completedAt": "2024-03-13T15:45:00Z"
+    }
+  ]
+}
