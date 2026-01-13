@@ -69,8 +69,8 @@ const Dashboard: React.FC = () => {
       <div className="row g-4">
         <div className="col-md-3">
           <div className="card text-white bg-primary">
-            <div className="card-body">
-              <h5 className="card-title">
+            <div className="card-body" style={{ padding: '1.25rem' }}>
+              <h5 className="card-title" style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
                 <i className="fas fa-file-alt me-2"></i>Total Applications
               </h5>
               <h2 className="card-text">{stats.totalApplications}</h2>
@@ -81,7 +81,7 @@ const Dashboard: React.FC = () => {
         <div className="col-md-3">
           <div className="card text-white bg-warning">
             <div className="card-body">
-              <h5 className="card-title">
+              <h5 className="card-title" style={{ whiteSpace: 'nowrap', fontSize: '1rem' }}>
                 <i className="fas fa-clock me-2"></i>Pending
               </h5>
               <h2 className="card-text">{stats.pendingApplications}</h2>
@@ -92,7 +92,7 @@ const Dashboard: React.FC = () => {
         <div className="col-md-3">
           <div className="card text-white bg-success">
             <div className="card-body">
-              <h5 className="card-title">
+              <h5 className="card-title" style={{ whiteSpace: 'nowrap', fontSize: '1rem' }}>
                 <i className="fas fa-check-circle me-2"></i>Active
               </h5>
               <h2 className="card-text">{stats.activeApplications}</h2>
@@ -104,7 +104,7 @@ const Dashboard: React.FC = () => {
           <div className="col-md-3">
             <div className="card text-white bg-info">
               <div className="card-body">
-                <h5 className="card-title">
+                <h5 className="card-title" style={{ whiteSpace: 'nowrap', fontSize: '1rem' }}>
                   <i className="fas fa-users me-2"></i>Salesmen
                 </h5>
                 <h2 className="card-text">{stats.totalSalesmen}</h2>
