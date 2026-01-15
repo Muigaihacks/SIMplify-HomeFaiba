@@ -82,4 +82,67 @@ export const apiService = {
     if (!response.ok) throw new Error('Failed to fetch installations');
     return response.json();
   },
+
+  // Salesman management
+  createSalesman: async (data: any): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/salesmen`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to create salesman');
+    return response.json();
+  },
+
+  updateSalesman: async (id: number, data: any): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/salesmen/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update salesman');
+    return response.json();
+  },
+
+  deactivateSalesman: async (id: number): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/salesmen/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ isActive: false }),
+    });
+    if (!response.ok) throw new Error('Failed to deactivate salesman');
+    return response.json();
+  },
+
+  // Commission management
+  markCommissionAsPaid: async (id: number): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/commissions/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paid: true, paidAt: new Date().toISOString() }),
+    });
+    if (!response.ok) throw new Error('Failed to mark commission as paid');
+    return response.json();
+  },
+
+  // Cancel application
+  cancelApplication: async (id: number): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'cancelled' }),
+    });
+    if (!response.ok) throw new Error('Failed to cancel application');
+    return response.json();
+  },
 };

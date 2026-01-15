@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { apiService } from '../services/api';
-import type { Application, Salesman } from '../types';
+import { Application } from '../types';
 
 const Dashboard: React.FC = () => {
   const { dealerId, agentId, userRole } = useAppContext();
@@ -66,8 +66,8 @@ const Dashboard: React.FC = () => {
         <i className="fas fa-tachometer-alt me-2"></i>Dashboard
       </h1>
 
-      <div className="row g-4">
-        <div className="col-md-3">
+      <div className={`row g-4 ${userRole === 'agent' ? 'justify-content-center' : ''}`}>
+        <div className={userRole === 'agent' ? 'col-md-4' : 'col-md-3'}>
           <div className="card text-white bg-primary">
             <div className="card-body" style={{ padding: '1.25rem' }}>
               <h5 className="card-title" style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
@@ -78,7 +78,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="col-md-3">
+        <div className={userRole === 'agent' ? 'col-md-4' : 'col-md-3'}>
           <div className="card text-white bg-warning">
             <div className="card-body">
               <h5 className="card-title" style={{ whiteSpace: 'nowrap', fontSize: '1rem' }}>
@@ -89,7 +89,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="col-md-3">
+        <div className={userRole === 'agent' ? 'col-md-4' : 'col-md-3'}>
           <div className="card text-white bg-success">
             <div className="card-body">
               <h5 className="card-title" style={{ whiteSpace: 'nowrap', fontSize: '1rem' }}>

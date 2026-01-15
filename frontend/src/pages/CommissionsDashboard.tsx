@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { apiService } from '../services/api';
 import type { Commission } from '../types';
+import Toast from '../components/Toast';
 
 const CommissionsDashboard: React.FC = () => {
   const { dealerId } = useAppContext();
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('2024-03');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' as 'success' | 'error' | 'info' | 'warning' });
 
   useEffect(() => {
     const fetchCommissions = async () => {
@@ -25,6 +27,22 @@ const CommissionsDashboard: React.FC = () => {
 
     fetchCommissions();
   }, [dealerId, selectedPeriod]);
+
+  const handleMarkAsPaid = async (commission: Commission) => {
+    if (window.confirm(`Mark commission for ${commission.agentName} as paid?`)) {
+      try {
+        await apiService.markCommissionAsPaid(commission.id);
+        setToast({ show: true, message: 'Commission marked as paid successfully', type: 'success' });
+        // Refresh commissions
+        const data = await apiService.getCommissions(dealerId);
+        const filtered = data.filter((c: Commission) => c.period === selectedPeriod);
+        setCommissions(filtered);
+      } catch (error) {
+        console.error('Error marking commission as paid:', error);
+        setToast({ show: true, message: 'Failed to mark commission as paid', type: 'error' });
+      }
+    }
+  };
 
   const totalCommission = commissions.reduce((sum, c) => sum + c.totalCommission, 0);
   const totalRevenue = commissions.reduce((sum, c) => sum + c.totalRevenue, 0);
@@ -161,7 +179,10 @@ const CommissionsDashboard: React.FC = () => {
                       </td>
                       <td>
                         {!commission.paid && (
-                          <button className="btn btn-sm btn-success">
+                          <button
+                            className="btn btn-sm btn-success"
+                            onClick={() => handleMarkAsPaid(commission)}
+                          >
                             <i className="fas fa-check me-1"></i>Mark as Paid
                           </button>
                         )}
@@ -227,6 +248,13 @@ const CommissionsDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   );
 };

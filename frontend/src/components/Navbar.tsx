@@ -1,13 +1,23 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../contexts/AppContext';
-import RoleSwitcher from './RoleSwitcher';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
-  const { userRole } = useAppContext();
+  const navigate = useNavigate();
+  const { userRole, setUserRole, setDealerId, setAgentId } = useAppContext();
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('dealerId');
+    localStorage.removeItem('agentId');
+    setUserRole('dealer');
+    setDealerId(1);
+    setAgentId(null);
+    navigate('/login');
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-success">
@@ -109,7 +119,11 @@ const Navbar: React.FC = () => {
               </>
             )}
           </ul>
-          <RoleSwitcher />
+          <div className="d-flex align-items-center">
+            <button className="btn btn-outline-light" onClick={handleLogout}>
+              <i className="fas fa-sign-out-alt me-1"></i>Logout
+            </button>
+          </div>
         </div>
       </div>
     </nav>

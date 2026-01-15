@@ -12,12 +12,38 @@ const ApplicationForm: React.FC = () => {
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' as 'success' | 'error' | 'info' | 'warning' });
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Kenyan cities - this will be replaced by backend data
+  const kenyanCities = [
+    'Nairobi',
+    'Mombasa',
+    'Kisumu',
+    'Nakuru',
+    'Eldoret',
+    'Thika',
+    'Malindi',
+    'Kitale',
+    'Garissa',
+    'Kakamega',
+    'Nyeri',
+    'Meru',
+    'Machakos',
+    'Embu',
+    'Kericho',
+    'Bungoma',
+    'Busia',
+    'Homa Bay',
+    'Kisii',
+    'Lamu',
+  ];
 
   const [formData, setFormData] = useState({
     customerName: '',
     customerEmail: '',
     customerPhone: '',
     customerNationalId: '',
+    idType: 'id' as 'id' | 'passport',
     physicalAddress: {
       building: '',
       floor: '',
@@ -49,6 +75,12 @@ const ApplicationForm: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Clear validation error for this field
+    if (validationErrors[name]) {
+      setValidationErrors({ ...validationErrors, [name]: '' });
+    }
+    
     if (name.startsWith('address.')) {
       const addressField = name.split('.')[1];
       setFormData({
@@ -57,6 +89,12 @@ const ApplicationForm: React.FC = () => {
           ...formData.physicalAddress,
           [addressField]: value,
         },
+      });
+    } else if (name === 'idType') {
+      setFormData({
+        ...formData,
+        idType: value as 'id' | 'passport',
+        customerNationalId: '', // Clear ID when switching type
       });
     } else {
       setFormData({
@@ -79,24 +117,120 @@ const ApplicationForm: React.FC = () => {
     }
   };
 
+  // Email validation
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Phone validation - must start with +254
+  const validatePhone = (phone: string): boolean => {
+    // Remove spaces and dashes
+    const cleaned = phone.replace(/[\s-]/g, '');
+    // Must start with +254 and have 9 more digits (total 13 characters)
+    return /^\+254\d{9}$/.test(cleaned);
+  };
+
+  // Format phone to +254 format
+  const formatPhone = (phone: string): string => {
+    // Remove all non-digits
+    const digits = phone.replace(/\D/g, '');
+    
+    // If starts with 0, replace with +254
+    if (digits.startsWith('0') && digits.length === 10) {
+      return '+254' + digits.substring(1);
+    }
+    // If starts with 254, add +
+    if (digits.startsWith('254') && digits.length === 12) {
+      return '+' + digits;
+    }
+    // If already has +254, return as is
+    if (phone.startsWith('+254')) {
+      return phone.replace(/[\s-]/g, '');
+    }
+    // Otherwise, assume it's a 9-digit number and add +254
+    if (digits.length === 9) {
+      return '+254' + digits;
+    }
+    return phone;
+  };
+
+  // ID validation - 8 digits for Kenyan ID
+  const validateId = (id: string): boolean => {
+    return /^\d{8}$/.test(id);
+  };
+
+  // Passport validation - typically 6-9 alphanumeric characters
+  const validatePassport = (passport: string): boolean => {
+    // Passport numbers are typically 6-9 alphanumeric characters
+    return /^[A-Z0-9]{6,9}$/i.test(passport);
+  };
+
   const validateStep = (): boolean => {
+    const errors: Record<string, string> = {};
+    
     if (step === 1) {
-      if (!formData.customerName || !formData.customerEmail || !formData.customerPhone || !formData.customerNationalId) {
-        setToast({ show: true, message: 'Please fill all customer information fields', type: 'warning' });
-        return false;
-      }
-    } else if (step === 2) {
-      const addr = formData.physicalAddress;
-      if (!addr.building || !addr.floor || !addr.unit || !addr.street || !addr.area || !addr.postalCode) {
-        setToast({ show: true, message: 'Please fill all address fields', type: 'warning' });
-        return false;
-      }
-    } else if (step === 3) {
+      // Package selection
       if (!formData.packageId) {
         setToast({ show: true, message: 'Please select a package', type: 'warning' });
         return false;
       }
+    } else if (step === 2) {
+      // Customer information
+      if (!formData.customerName.trim()) {
+        errors.customerName = 'Full name is required';
+      }
+      
+      if (!formData.customerEmail.trim()) {
+        errors.customerEmail = 'Email address is required';
+      } else if (!validateEmail(formData.customerEmail)) {
+        errors.customerEmail = 'Please enter a valid email address';
+      }
+      
+      if (!formData.customerPhone.trim()) {
+        errors.customerPhone = 'Phone number is required';
+      } else {
+        const formatted = formatPhone(formData.customerPhone);
+        if (!validatePhone(formatted)) {
+          errors.customerPhone = 'Phone must be in format +254XXXXXXXXX (e.g., +254712345678)';
+        } else {
+          // Update with formatted phone
+          setFormData({ ...formData, customerPhone: formatted });
+        }
+      }
+      
+      if (!formData.customerNationalId.trim()) {
+        errors.customerNationalId = `${formData.idType === 'id' ? 'National ID' : 'Passport number'} is required`;
+      } else {
+        if (formData.idType === 'id') {
+          if (!validateId(formData.customerNationalId)) {
+            errors.customerNationalId = 'National ID must be exactly 8 digits';
+          }
+        } else {
+          if (!validatePassport(formData.customerNationalId)) {
+            errors.customerNationalId = 'Passport number must be 6-9 alphanumeric characters';
+          }
+        }
+      }
+      
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors);
+        setToast({ show: true, message: 'Please correct the errors in the form', type: 'warning' });
+        return false;
+      }
+    } else if (step === 3) {
+      // Physical address - only building and city are required
+      if (!formData.physicalAddress.building.trim()) {
+        setToast({ show: true, message: 'Building/Estate name is required', type: 'warning' });
+        return false;
+      }
+      if (!formData.physicalAddress.city.trim()) {
+        setToast({ show: true, message: 'City is required', type: 'warning' });
+        return false;
+      }
     }
+    
+    setValidationErrors({});
     return true;
   };
 
@@ -108,6 +242,7 @@ const ApplicationForm: React.FC = () => {
 
   const handlePrevious = () => {
     setStep(step - 1);
+    setValidationErrors({});
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -124,6 +259,7 @@ const ApplicationForm: React.FC = () => {
         customerEmail: formData.customerEmail,
         customerPhone: formData.customerPhone,
         customerNationalId: formData.customerNationalId,
+        idType: formData.idType,
         physicalAddress: formData.physicalAddress,
         packageId: formData.packageId,
         packageName: selectedPackage?.name || '',
@@ -175,149 +311,11 @@ const ApplicationForm: React.FC = () => {
 
         <div className="card-body">
           <form onSubmit={handleSubmit}>
-            {/* Step 1: Customer Information */}
+            {/* Step 1: Package Selection */}
             {step === 1 && (
               <div>
-                <h4 className="mb-3">Customer Information</h4>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label">Full Name *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="customerName"
-                      value={formData.customerName}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Email Address *</label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      name="customerEmail"
-                      value={formData.customerEmail}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Phone Number *</label>
-                    <input
-                      type="tel"
-                      className="form-control"
-                      name="customerPhone"
-                      value={formData.customerPhone}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">National ID *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="customerNationalId"
-                      value={formData.customerNationalId}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Physical Address */}
-            {step === 2 && (
-              <div>
-                <h4 className="mb-3">Physical Address</h4>
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label">Building Name *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="address.building"
-                      value={formData.physicalAddress.building}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Floor *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="address.floor"
-                      value={formData.physicalAddress.floor}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Unit/Code *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="address.unit"
-                      value={formData.physicalAddress.unit}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Street *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="address.street"
-                      value={formData.physicalAddress.street}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Area *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="address.area"
-                      value={formData.physicalAddress.area}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">City *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="address.city"
-                      value={formData.physicalAddress.city}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Postal Code *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="address.postalCode"
-                      value={formData.physicalAddress.postalCode}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Package Selection */}
-            {step === 3 && (
-              <div>
-                <h4 className="mb-3">Select Package</h4>
+                <h4 className="mb-3">Select WiFi Package</h4>
+                <p className="text-muted mb-4">Please select the package that best suits your customer's needs.</p>
                 <div className="row g-3">
                   {packages.map((pkg) => (
                     <div key={pkg.id} className="col-md-6">
@@ -360,13 +358,199 @@ const ApplicationForm: React.FC = () => {
               </div>
             )}
 
+            {/* Step 2: Customer Information */}
+            {step === 2 && (
+              <div>
+                <h4 className="mb-3">Customer Information</h4>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label">Full Name *</label>
+                    <input
+                      type="text"
+                      className={`form-control ${validationErrors.customerName ? 'is-invalid' : ''}`}
+                      name="customerName"
+                      value={formData.customerName}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    {validationErrors.customerName && (
+                      <div className="invalid-feedback">{validationErrors.customerName}</div>
+                    )}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Email Address *</label>
+                    <input
+                      type="email"
+                      className={`form-control ${validationErrors.customerEmail ? 'is-invalid' : ''}`}
+                      name="customerEmail"
+                      value={formData.customerEmail}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    {validationErrors.customerEmail && (
+                      <div className="invalid-feedback">{validationErrors.customerEmail}</div>
+                    )}
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Phone Number *</label>
+                    <div className="input-group">
+                      <span className="input-group-text">+254</span>
+                      <input
+                        type="tel"
+                        className={`form-control ${validationErrors.customerPhone ? 'is-invalid' : ''}`}
+                        name="customerPhone"
+                        value={formData.customerPhone.replace('+254', '')}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const formatted = formatPhone('+254' + value.replace(/\D/g, ''));
+                          setFormData({ ...formData, customerPhone: formatted });
+                          if (validationErrors.customerPhone) {
+                            setValidationErrors({ ...validationErrors, customerPhone: '' });
+                          }
+                        }}
+                        placeholder="712345678"
+                        required
+                      />
+                    </div>
+                    {validationErrors.customerPhone && (
+                      <div className="invalid-feedback">{validationErrors.customerPhone}</div>
+                    )}
+                    <small className="text-muted">Format: +254XXXXXXXXX (e.g., +254712345678)</small>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">ID Type *</label>
+                    <select
+                      className="form-control"
+                      name="idType"
+                      value={formData.idType}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="id">National ID</option>
+                      <option value="passport">Passport</option>
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">
+                      {formData.idType === 'id' ? 'National ID *' : 'Passport Number *'}
+                    </label>
+                    <input
+                      type="text"
+                      className={`form-control ${validationErrors.customerNationalId ? 'is-invalid' : ''}`}
+                      name="customerNationalId"
+                      value={formData.customerNationalId}
+                      onChange={handleInputChange}
+                      placeholder={formData.idType === 'id' ? '12345678 (8 digits)' : 'A1234567 (6-9 characters)'}
+                      required
+                    />
+                    {validationErrors.customerNationalId && (
+                      <div className="invalid-feedback">{validationErrors.customerNationalId}</div>
+                    )}
+                    <small className="text-muted">
+                      {formData.idType === 'id'
+                        ? 'Kenyan National ID: 8 digits'
+                        : 'Passport: 6-9 alphanumeric characters'}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Physical Address */}
+            {step === 3 && (
+              <div>
+                <h4 className="mb-3">Physical Address</h4>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label">Building/Estate Name *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="address.building"
+                      value={formData.physicalAddress.building}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Floor</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="address.floor"
+                      value={formData.physicalAddress.floor}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Unit/House No</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="address.unit"
+                      value={formData.physicalAddress.unit}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Street</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="address.street"
+                        value={formData.physicalAddress.street}
+                        onChange={handleInputChange}
+                      />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Area</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="address.area"
+                      value={formData.physicalAddress.area}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">City *</label>
+                    <select
+                      className="form-control"
+                      name="address.city"
+                      value={formData.physicalAddress.city}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      {kenyanCities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Postal Code</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="address.postalCode"
+                      value={formData.physicalAddress.postalCode}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Step 4: KYC Documents */}
             {step === 4 && (
               <div>
                 <h4 className="mb-3">KYC Documents</h4>
                 <div className="row g-3">
                   <div className="col-md-6">
-                    <label className="form-label">National ID Copy</label>
+                    <label className="form-label">
+                      {formData.idType === 'id' ? 'National ID Copy' : 'Passport Copy'}
+                    </label>
                     <input
                       type="file"
                       className="form-control"
@@ -403,7 +587,7 @@ const ApplicationForm: React.FC = () => {
                     <p><strong>Customer:</strong> {formData.customerName}</p>
                     <p><strong>Package:</strong> {selectedPackage.name} - {selectedPackage.speed}</p>
                     <p><strong>Monthly Fee:</strong> KSh {selectedPackage.price.toLocaleString()}</p>
-                    <p><strong>Address:</strong> {formData.physicalAddress.building}, {formData.physicalAddress.area}</p>
+                    <p><strong>Address:</strong> {formData.physicalAddress.building}, {formData.physicalAddress.area || formData.physicalAddress.city}</p>
                   </div>
                 )}
               </div>

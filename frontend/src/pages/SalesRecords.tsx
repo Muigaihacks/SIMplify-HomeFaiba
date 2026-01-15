@@ -1,33 +1,135 @@
 import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { apiService } from '../services/api';
-import type { Application } from '../types';
+import type { Application, Package } from '../types';
+import Toast from '../components/Toast';
 
 const SalesRecords: React.FC = () => {
   const { dealerId, agentId, userRole } = useAppContext();
   const [applications, setApplications] = useState<Application[]>([]);
+  const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingApplication, setEditingApplication] = useState<Application | null>(null);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' as 'success' | 'error' | 'info' | 'warning' });
+  const [editFormData, setEditFormData] = useState({
+    packageId: 0,
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    physicalAddress: {
+      building: '',
+      floor: '',
+      unit: '',
+      street: '',
+      area: '',
+      city: '',
+      postalCode: '',
+    },
+  });
 
   useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        setLoading(true);
-        const data = await apiService.getApplications(
+    fetchData();
+  }, [dealerId, agentId, userRole]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [appsData, packagesData] = await Promise.all([
+        apiService.getApplications(
           dealerId,
           userRole === 'agent' ? agentId : undefined
-        );
-        setApplications(data);
-      } catch (error) {
-        console.error('Error fetching applications:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+        ),
+        apiService.getPackages(),
+      ]);
+      setApplications(appsData);
+      setPackages(packagesData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setToast({ show: true, message: 'Failed to load data', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchApplications();
-  }, [dealerId, agentId, userRole]);
+  const getPackageColor = (packageName: string): string => {
+    const pkg = packages.find((p) => p.name === packageName);
+    return pkg?.color || '#6c757d';
+  };
+
+  const handleEdit = (app: Application) => {
+    setEditingApplication(app);
+    setEditFormData({
+      packageId: app.packageId,
+      customerName: app.customerName,
+      customerEmail: app.customerEmail,
+      customerPhone: app.customerPhone,
+      physicalAddress: app.physicalAddress,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingApplication(null);
+  };
+
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    if (name.startsWith('address.')) {
+      const addressField = name.split('.')[1];
+      setEditFormData({
+        ...editFormData,
+        physicalAddress: {
+          ...editFormData.physicalAddress,
+          [addressField]: value,
+        },
+      });
+    } else {
+      setEditFormData({
+        ...editFormData,
+        [name]: value,
+      });
+    }
+  };
+
+  const handleUpdateApplication = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingApplication) return;
+
+    try {
+      const selectedPackage = packages.find((p) => p.id === editFormData.packageId);
+      await apiService.updateApplication(editingApplication.id, {
+        packageId: editFormData.packageId,
+        packageName: selectedPackage?.name || editingApplication.packageName,
+        customerName: editFormData.customerName,
+        customerEmail: editFormData.customerEmail,
+        customerPhone: editFormData.customerPhone,
+        physicalAddress: editFormData.physicalAddress,
+      });
+      setToast({ show: true, message: 'Application updated successfully', type: 'success' });
+      handleCloseEditModal();
+      fetchData();
+    } catch (error) {
+      console.error('Error updating application:', error);
+      setToast({ show: true, message: 'Failed to update application', type: 'error' });
+    }
+  };
+
+  const handleCancel = async (app: Application) => {
+    if (window.confirm(`Are you sure you want to cancel application ${app.applicationNumber}?`)) {
+      try {
+        await apiService.cancelApplication(app.id);
+        setToast({ show: true, message: 'Application cancelled successfully', type: 'success' });
+        fetchData();
+      } catch (error) {
+        console.error('Error cancelling application:', error);
+        setToast({ show: true, message: 'Failed to cancel application', type: 'error' });
+      }
+    }
+  };
 
   const filteredApplications = applications.filter((app) => {
     const matchesSearch =
@@ -155,7 +257,15 @@ const SalesRecords: React.FC = () => {
                       <td>{app.customerName}</td>
                       <td>{app.customerPhone}</td>
                       <td>
-                        <span className="badge bg-info">{app.packageName}</span>
+                        <span
+                          className="badge"
+                          style={{
+                            backgroundColor: getPackageColor(app.packageName),
+                            color: getPackageColor(app.packageName) === '#ffd700' || getPackageColor(app.packageName) === '#c0c0c0' ? '#000' : '#fff',
+                          }}
+                        >
+                          {app.packageName}
+                        </span>
                       </td>
                       <td>{app.agentName}</td>
                       <td>
@@ -175,9 +285,22 @@ const SalesRecords: React.FC = () => {
                         </small>
                       </td>
                       <td>
-                        <button className="btn btn-sm btn-outline-primary">
-                          <i className="fas fa-eye"></i>
+                        <button
+                          className="btn btn-sm btn-outline-primary me-1"
+                          onClick={() => handleEdit(app)}
+                          title="Edit"
+                        >
+                          <i className="fas fa-edit"></i>
                         </button>
+                        {app.status !== 'cancelled' && (
+                          <button
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => handleCancel(app)}
+                            title="Cancel"
+                          >
+                            <i className="fas fa-times"></i>
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -238,6 +361,167 @@ const SalesRecords: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && editingApplication && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex={-1}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content">
+              <div className="modal-header bg-primary text-white">
+                <h5 className="modal-title">Edit Application: {editingApplication.applicationNumber}</h5>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={handleCloseEditModal}
+                ></button>
+              </div>
+              <form onSubmit={handleUpdateApplication}>
+                <div className="modal-body">
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <label className="form-label">Package *</label>
+                      <select
+                        className="form-select"
+                        name="packageId"
+                        value={editFormData.packageId}
+                        onChange={handleEditInputChange}
+                        required
+                      >
+                        <option value="">Select Package</option>
+                        {packages.map((pkg) => (
+                          <option key={pkg.id} value={pkg.id}>
+                            {pkg.name} - {pkg.speed} (KSh {pkg.price.toLocaleString()}/month)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Customer Name *</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="customerName"
+                        value={editFormData.customerName}
+                        onChange={handleEditInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Email *</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        name="customerEmail"
+                        value={editFormData.customerEmail}
+                        onChange={handleEditInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Phone *</label>
+                      <input
+                        type="tel"
+                        className="form-control"
+                        name="customerPhone"
+                        value={editFormData.customerPhone}
+                        onChange={handleEditInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Building/Estate Name *</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="address.building"
+                        value={editFormData.physicalAddress.building}
+                        onChange={handleEditInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Floor</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="address.floor"
+                        value={editFormData.physicalAddress.floor}
+                        onChange={handleEditInputChange}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Unit/House No</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="address.unit"
+                        value={editFormData.physicalAddress.unit}
+                        onChange={handleEditInputChange}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Street</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="address.street"
+                        value={editFormData.physicalAddress.street}
+                        onChange={handleEditInputChange}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Area</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="address.area"
+                        value={editFormData.physicalAddress.area}
+                        onChange={handleEditInputChange}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">City *</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="address.city"
+                        value={editFormData.physicalAddress.city}
+                        onChange={handleEditInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Postal Code</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="address.postalCode"
+                        value={editFormData.physicalAddress.postalCode}
+                        onChange={handleEditInputChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={handleCloseEditModal}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    Update Application
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   );
 };

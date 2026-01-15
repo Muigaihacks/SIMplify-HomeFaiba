@@ -57,7 +57,7 @@
         "Free installation",
         "Static IP option"
       ],
-      "color": "#e5e4e2"
+      "color": "#0056b3"
     }
   ],
   "salesmen": [
@@ -256,6 +256,32 @@
         "nationalId": "pending",
         "proofOfAddress": "pending"
       }
+    },
+    {
+      "id": "7a99",
+      "dealerId": 1,
+      "agentId": 1,
+      "customerName": "tyrese muigai",
+      "customerEmail": "tyresemuigai09@gmail.com",
+      "customerPhone": "0718004282",
+      "customerNationalId": "41630252",
+      "physicalAddress": {
+        "building": "wamu",
+        "floor": "1st",
+        "unit": "9",
+        "street": "juja",
+        "area": "kalimoni",
+        "city": "Nairobi",
+        "postalCode": "565-10400"
+      },
+      "packageId": "3",
+      "packageName": "Gold",
+      "status": "cancelled",
+      "submittedAt": "2026-01-13T08:38:38.044Z",
+      "kycDocuments": {
+        "nationalId": "pending",
+        "proofOfAddress": "pending"
+      }
     }
   ],
   "commissions": [
@@ -298,8 +324,8 @@
       "totalRevenue": 27000,
       "commissionRate": 0.15,
       "totalCommission": 4050,
-      "paid": false,
-      "paidAt": null
+      "paid": true,
+      "paidAt": "2026-01-14T08:32:29.920Z"
     }
   ],
   "installations": [
